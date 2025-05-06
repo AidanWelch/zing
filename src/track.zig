@@ -3,7 +3,7 @@ const testing = std.testing;
 
 pub const TrackData = []f32;
 
-pub const TransformFunction = fn (data: []f32, sample_rate: usize, track_data_allocator: TrackDataAllocator) anyerror!TrackData;
+pub const TransformFunction = fn (data: []const f32, sample_rate: usize, track_data_allocator: TrackDataAllocator) anyerror!TrackData;
 
 pub const TrackDataAllocator = struct {
     allocator: std.mem.Allocator,
@@ -41,18 +41,17 @@ pub const Track = struct {
         self.track_data_allocator.free(self.data);
     }
 
-    /// Calls transform_func on the track and returns a new track that must be
-    /// freed.
-    pub fn project(self: Track, transform_func: TransformFunction) !Track {
-        return .{
+    /// Returns a new track that must also be freed
+    pub fn duplicate(self: Track) Track {
+        var new_track = Track{
             .sample_rate = self.sample_rate,
             .track_data_allocator = self.track_data_allocator,
-            .data = try transform_func(
-                self.data,
-                self.sample_rate,
-                self.track_data_allocator,
-            ),
         };
+
+        new_track.data = try new_track.track_data_allocator.alloc(self.val.data.len);
+        @memcpy(new_track.data, self.val.data);
+
+        return new_track;
     }
 
     /// Calls transform_func on the track and overwrites it.
