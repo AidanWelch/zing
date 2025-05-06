@@ -42,7 +42,7 @@ pub const Track = struct {
     }
 
     /// Returns a new track that must also be freed
-    pub fn duplicate(self: Track) Track {
+    pub fn duplicate(self: Track) !Track {
         var new_track = Track{
             .sample_rate = self.sample_rate,
             .track_data_allocator = self.track_data_allocator,
