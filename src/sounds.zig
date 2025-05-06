@@ -28,9 +28,9 @@ pub fn sin(frequency: f32, length: usize) zing.TransformFunction {
 }
 
 test "sin" {
-    var track = try zing.Track.init(64000, std.testing.allocator);
-    try track.mutate(index(1, 64000));
-    try track.mutate(sin(200, 64000));
+    var track = zing.Track.init(64000, std.testing.allocator);
+    _ = track.mutate(index(1, 64000));
+    _ = track.mutate(sin(200, 64000));
     try track.play();
     track.free();
 }
