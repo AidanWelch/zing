@@ -56,12 +56,15 @@ pub const Track = struct {
 
     /// Calls transform_func on the track and overwrites it.
     pub fn mutate(self: *Track, transform_func: TransformFunction) !void {
+        const old_data = self.data;
+        defer self.track_data_allocator.free(old_data);
+
         const new_data = try transform_func(
-            self.data,
+            old_data,
             self.sample_rate,
             self.track_data_allocator,
         );
-        self.track_data_allocator.free(self.data);
+
         self.data = new_data;
     }
 
