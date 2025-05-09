@@ -5,15 +5,23 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    var track = try zing.Track.init(48000, allocator);
-    try track.mutateContext(zing.sin(100, 48000));
+    const opts: zing.TrackOptions = .{
+        .sample_rate = 48000,
+        .allocator = allocator,
+    };
 
-    var t2 = try zing.Track.init(48000, allocator);
-    try t2.mutateContext(zing.sin(200, 48000));
+    var t1 = try zing.sin(opts, 100, 48000);
+    var t2 = try zing.silence(opts, 1);
+    try zing.push(
+        &t2,
+        try zing.sin(opts, 200, 48000),
+    );
 
-    try track.mutateContext(zing.push(t2));
-    try track.mutateContext(zing.push(try track.duplicate()));
+    try zing.push(
+        &t1,
+        t2,
+    );
 
-    try track.save();
-    track.free();
+    try t1.save();
+    t1.free();
 }

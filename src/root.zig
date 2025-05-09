@@ -4,8 +4,7 @@ const track = @import("./track.zig");
 pub const Track = track.Track;
 pub const TrackData = track.TrackData;
 pub const TrackDataAllocator = track.TrackDataAllocator;
-pub const TransformFunction = track.TransformFunction;
-pub const WithContext = track.WithContext;
+pub const TrackOptions = track.TrackOptions;
 
 pub const add = @import("./math/add.zig").add;
 pub const invert = @import("./math/invert.zig").invert;

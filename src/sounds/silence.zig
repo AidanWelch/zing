@@ -1,24 +1,17 @@
 const std = @import("std");
 const zing = @import("../root.zig");
 
-const LengthContext = usize;
+pub fn silence(opts: zing.TrackOptions, seconds: f64) !zing.Track {
+    var track = try zing.Track.init(opts);
 
-pub fn silence(length: usize) zing.WithContext(LengthContext) {
-    return .{
-        .call = struct {
-            pub fn call(
-                _: []const f32,
-                _: usize,
-                track_data_allocator: zing.TrackDataAllocator,
-                context: LengthContext,
-            ) anyerror!zing.TrackData {
-                var sample = try track_data_allocator.alloc(context);
-                for (0..context) |i| {
-                    sample[i] = 0;
-                }
-                return sample;
-            }
-        }.call,
-        .context = length,
-    };
+    const length: usize = @intFromFloat(@as(f64, @floatFromInt(track.sample_rate)) * seconds);
+
+    var sample = try track.track_data_allocator.alloc(length);
+    for (0..length) |i| {
+        sample[i] = 0;
+    }
+
+    track.data = sample;
+
+    return track;
 }

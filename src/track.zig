@@ -3,20 +3,6 @@ const testing = std.testing;
 
 pub const TrackData = []f32;
 
-pub const TransformFunction = *const fn (data: []const f32, sample_rate: usize, track_data_allocator: TrackDataAllocator) anyerror!TrackData;
-
-pub fn WithContext(comptime ContextType: type) type {
-    return struct {
-        call: *const fn (
-            data: []const f32,
-            sample_rate: usize,
-            track_data_allocator: TrackDataAllocator,
-            context: ContextType,
-        ) anyerror!TrackData,
-        context: ContextType,
-    };
-}
-
 pub const TrackDataAllocator = struct {
     allocator: std.mem.Allocator,
 
@@ -32,19 +18,24 @@ pub const TrackDataAllocator = struct {
     }
 };
 
+pub const TrackOptions = struct {
+    sample_rate: usize,
+    allocator: std.mem.Allocator,
+};
+
 pub const Track = struct {
     data: []f32,
     sample_rate: usize,
     track_data_allocator: TrackDataAllocator,
 
-    pub fn init(sample_rate: usize, allocator: std.mem.Allocator) !Track {
+    pub fn init(opts: TrackOptions) !Track {
         const track_data_allocator = TrackDataAllocator{
-            .allocator = allocator,
+            .allocator = opts.allocator,
         };
 
         return .{
             .data = try track_data_allocator.alloc(0),
-            .sample_rate = sample_rate,
+            .sample_rate = opts.sample_rate,
             .track_data_allocator = track_data_allocator,
         };
     }
@@ -65,38 +56,6 @@ pub const Track = struct {
         @memcpy(new_track.data, self.data);
 
         return new_track;
-    }
-
-    /// Calls transform_func on the track and overwrites it.
-    pub fn mutate(self: *Track, transform_func: TransformFunction) !void {
-        const old_data = self.data;
-        defer self.track_data_allocator.free(old_data);
-
-        const new_data = try transform_func(
-            old_data,
-            self.sample_rate,
-            self.track_data_allocator,
-        );
-
-        self.data = new_data;
-    }
-
-    /// Calls transformation.call on the track and overwrites it.
-    pub fn mutateContext(
-        self: *Track,
-        transform: anytype,
-    ) !void {
-        const old_data = self.data;
-        defer self.track_data_allocator.free(old_data);
-
-        const new_data = try transform.call(
-            old_data,
-            self.sample_rate,
-            self.track_data_allocator,
-            transform.context,
-        );
-
-        self.data = new_data;
     }
 
     fn sample_rate_as_string(self: Track, buf: *[16]u8) []u8 {
@@ -143,49 +102,3 @@ pub const Track = struct {
         std.debug.print("{}", .{trash});
     }
 };
-
-test "play sin wave" {
-    var track = try Track.init(64000, std.testing.allocator);
-    try track.mutate(struct {
-        pub fn call(
-            _: []const f32,
-            sample_rate: usize,
-            track_data_allocator: TrackDataAllocator,
-        ) anyerror!TrackData {
-            var sample = try track_data_allocator.alloc(sample_rate);
-
-            for (0..sample_rate) |i| {
-                const out: f32 = @floatFromInt(i);
-                sample[i] = std.math.sin(out * 0.1);
-            }
-
-            return sample;
-        }
-    }.call);
-
-    try track.play();
-    track.free();
-}
-
-test "save sin wave" {
-    var track = try Track.init(64000, std.testing.allocator);
-    try track.mutate(struct {
-        pub fn call(
-            _: []const f32,
-            sample_rate: usize,
-            track_data_allocator: TrackDataAllocator,
-        ) anyerror!TrackData {
-            var sample = try track_data_allocator.alloc(sample_rate);
-
-            for (0..sample_rate) |i| {
-                const out: f32 = @floatFromInt(i);
-                sample[i] = std.math.sin(out * 0.1);
-            }
-
-            return sample;
-        }
-    }.call);
-
-    try track.save();
-    track.free();
-}
