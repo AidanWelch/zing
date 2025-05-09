@@ -11,6 +11,7 @@ pub const add = @import("./math/add.zig").add;
 pub const invert = @import("./math/invert.zig").invert;
 pub const multiply = @import("./math/multiply.zig").multiply;
 pub const offset = @import("./math/offset.zig").offset;
+pub const push = @import("./math/push.zig").push;
 pub const scale = @import("./math/scale.zig").scale;
 
 pub const silence = @import("./sounds/silence.zig").silence;
