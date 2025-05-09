@@ -10,11 +10,11 @@ pub fn main() !void {
         .allocator = allocator,
     };
 
-    var t1 = try zing.sin(opts, 100, 48000);
+    var t1 = try zing.sin(opts, 100, 1);
     var t2 = try zing.silence(opts, 1);
     try zing.push(
         &t2,
-        try zing.sin(opts, 200, 48000),
+        try zing.sin(opts, 200, 2),
     );
 
     try zing.push(
