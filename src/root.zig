@@ -16,3 +16,4 @@ pub const scale = @import("./math/scale.zig").scale;
 pub const silence = @import("./sounds/silence.zig").silence;
 pub const sin = @import("./sounds/sin.zig").sin;
 pub const slope = @import("./sounds/slope.zig").slope;
+pub const square = @import("./sounds/square.zig").square;

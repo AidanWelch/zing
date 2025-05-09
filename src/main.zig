@@ -10,16 +10,18 @@ pub fn main() !void {
         .allocator = allocator,
     };
 
-    var t1 = try zing.sin(opts, 100, 1);
-    var t2 = try zing.silence(opts, 1);
-    try zing.push(
-        &t2,
-        try zing.sin(opts, 200, 2),
-    );
+    const bass_beat = try zing.sin(opts, 55, 3);
 
-    try zing.push(
+    var t1 = try zing.square(opts, 3, 3);
+    for (0..t1.data.len) |i| {
+        if (t1.data[i] < 0) {
+            t1.data[i] = 0;
+        }
+    }
+
+    try zing.multiply(
         &t1,
-        t2,
+        bass_beat,
     );
 
     try t1.save();
