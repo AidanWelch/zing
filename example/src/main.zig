@@ -1,5 +1,5 @@
 const std = @import("std");
-const zing = @import("root.zig");
+const zing = @import("zing");
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
@@ -10,20 +10,18 @@ pub fn main() !void {
         .allocator = allocator,
     };
 
-    const bass_beat = try zing.sin(opts, 55, 3);
+    const bass_beat = try zing.sin(opts, 185, 3);
 
     var t1 = try zing.square(opts, 3, 3);
-    for (0..t1.data.len) |i| {
-        if (t1.data[i] < 0) {
-            t1.data[i] = 0;
-        }
-    }
+    zing.rectify(t1, .POSITIVE_HALF);
 
     try zing.multiply(
         &t1,
         bass_beat,
     );
 
-    try t1.save();
+    try zing.push(&t1, try t1.duplicate());
+
+    try t1.play();
     t1.free();
 }
