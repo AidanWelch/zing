@@ -10,18 +10,23 @@ pub fn main() !void {
         .allocator = allocator,
     };
 
-    const bass_beat = try zing.sin(opts, 185, 3);
+ //   const bass_beat = try zing.sin(opts, 185, 3);
 
-    var t1 = try zing.square(opts, 3, 3);
-    zing.rectify(t1, .POSITIVE_HALF);
+ //   var t1 = try zing.square(opts, 3, 3);
+ //   zing.rectify(t1, .POSITIVE_HALF);
 
-    try zing.multiply(
-        &t1,
-        bass_beat,
-    );
+//    try zing.multiply(
+ //       &t1,
+ //       bass_beat,
+ //   );
 
-    try zing.push(&t1, try t1.duplicate());
+//    try zing.push(&t1, try t1.duplicate());
 
-    try t1.play();
-    t1.free();
+//    try t1.show();
+//    try t1.play();
+//    t1.free();
+    var t = try zing.sin(opts, 1, 3);
+    try t.show();
+    t.free();
+
 }
