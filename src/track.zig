@@ -136,6 +136,8 @@ pub const Track = struct {
             }
 
             try stdOut.writeByte('\n');
+            try stdOut.writeAll("_" ** show_columns);
+            try stdOut.writeByte('\n');
             for (0..show_rows) |row| {
                 for (0..show_columns) |col| {
                     const x = col * 2;
@@ -179,6 +181,8 @@ pub const Track = struct {
                 }
                 try stdOut.writeByte('\n');
             }
+            try stdOut.writeAll("‾" ** show_columns);
+            try stdOut.writeByte('\n');
             current_chunk += 1;
         }
         if (comptime builtin.target.os.tag == .windows) {
