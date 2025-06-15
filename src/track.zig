@@ -1,4 +1,5 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const zaudio = @import("zaudio");
 const testing = std.testing;
 
@@ -23,7 +24,6 @@ pub const TrackOptions = struct {
     sample_rate: usize,
     allocator: std.mem.Allocator,
 };
-
 
 const ZaudioAllocationData = struct {
     allocator: std.mem.Allocator,
@@ -55,16 +55,15 @@ pub const Track = struct {
             .data = try track_data_allocator.alloc(0),
             .sample_rate = opts.sample_rate,
             .track_data_allocator = track_data_allocator,
-                //.allocation_callbacks = .{
-                //    .user_data = opts.allocator,
-                //},
+            //.allocation_callbacks = .{
+            //    .user_data = opts.allocator,
+            //},
             //}),
         };
     }
 
     pub fn free(self: Track) void {
         self.track_data_allocator.free(self.data);
-
     }
 
     /// Returns a new track that must also be freed
@@ -97,47 +96,93 @@ pub const Track = struct {
         }
     }
 
+    // Each unicode braile has 2 columns
     const show_columns = 80;
-    const show_rows = 10;
+    const show_x_size = show_columns * 2;
+    // Each unicode braile has 4 rows
+    const show_rows = 20;
+    const show_y_size = show_rows * 4;
+
     /// Renders the track to console
     pub fn show(self: Track) !void {
+        var old_output_cp: c_uint = undefined;
+        if (comptime builtin.target.os.tag == .windows) {
+            old_output_cp = std.os.windows.kernel32.GetConsoleOutputCP();
+            _ = std.os.windows.kernel32.SetConsoleOutputCP(65001);
+        }
+
         const stdOut = std.io.getStdOut().writer();
         const chunks: usize = self.data.len / self.sample_rate;
-        const sample_interval: usize = self.sample_rate / show_columns;
+        const sample_interval: usize = self.sample_rate / show_x_size;
+
+        // Could eventually pack bits into bytes to save space
+        var out_grid: [show_x_size][show_y_size]bool = undefined;
         var current_chunk: usize = 0;
-
-       
-        // +1 for the newline char
-        var out_buffer: [show_rows*(show_columns+1)] u8 = undefined;
-        for (0..show_rows) |i| {
-            out_buffer[i*(show_columns+1)] = '\n';
-        }
- 
         while (current_chunk < chunks) {
-            for (out_buffer, 0..) |_, i| {
-                if (i % (show_columns+1) == 0) {
-                    continue;
+            for (0..show_x_size) |x| {
+                // make them all 0 to 2 because its just easier to work with
+                const middle_sample = self.data[
+                    (x * sample_interval) + (sample_interval / 2) + (current_chunk * self.sample_rate)
+                ] + 1;
+
+                //;
+
+                // since middle_sample is 0 to 2, cut in half to be 0 to 1 then
+                // bound to be 0 to show_rows-1
+                const y: usize = @intFromFloat(@round(middle_sample *
+                    (show_y_size - 1) * 0.5));
+
+                out_grid[x][y] = true;
+            }
+
+            try stdOut.writeByte('\n');
+            for (0..show_rows) |row| {
+                for (0..show_columns) |col| {
+                    const x = col * 2;
+                    const y = row * 4;
+                    var code_point: u21 = 0x2800;
+
+                    if (out_grid[x][y]) {
+                        code_point |= 0b0000_0001;
+                    }
+                    if (out_grid[x][y + 1]) {
+                        code_point |= 0b0000_0010;
+                    }
+                    if (out_grid[x][y + 2]) {
+                        code_point |= 0b0000_0100;
+                    }
+                    if (out_grid[x][y + 3]) {
+                        code_point |= 0b0100_0000;
+                    }
+                    if (out_grid[x + 1][y]) {
+                        code_point |= 0b0000_1000;
+                    }
+                    if (out_grid[x + 1][y + 1]) {
+                        code_point |= 0b0001_0000;
+                    }
+                    if (out_grid[x + 1][y + 2]) {
+                        code_point |= 0b0010_0000;
+                    }
+                    if (out_grid[x + 1][y + 3]) {
+                        code_point |= 0b1000_0000;
+                    }
+
+                    var out_char: [3]u8 = undefined;
+                    const res = try std.unicode.utf8Encode(
+                        code_point,
+                        &out_char,
+                    );
+                    if (res != 3) {
+                        return error.GenericError;
+                    }
+                    try stdOut.writeAll(&out_char);
                 }
-                out_buffer[i] = '_';
+                try stdOut.writeByte('\n');
             }
-
-            var x: usize = 0;
-            while (x < show_columns) {
-                const current_sample = (
-                    (x * sample_interval) + (current_chunk * self.sample_rate)
-                );
-
-                const y: usize = @intFromFloat(
-                    @round((self.data[current_sample]+1)*(show_rows-1)*0.5)
-                );
-                
-                out_buffer[x+((show_columns+1)*y)+1] = 'X';
-                x += 1;
-            }
-
-            try stdOut.writeAll(&out_buffer);
-            try std.fmt.format(stdOut, "\n", .{});
             current_chunk += 1;
+        }
+        if (comptime builtin.target.os.tag == .windows) {
+            _ = std.os.windows.kernel32.SetConsoleOutputCP(old_output_cp);
         }
     }
 
@@ -145,10 +190,10 @@ pub const Track = struct {
     pub fn play(self: Track) !void {
         zaudio.init(self.track_data_allocator.allocator);
         defer zaudio.deinit();
-        
+
         var engine_config = zaudio.Engine.Config.init();
         const device_config = zaudio.Device.Config.init(.playback);
-        engine_config.device = try zaudio.Device.create(null, device_config); 
+        engine_config.device = try zaudio.Device.create(null, device_config);
 
         const engine = try zaudio.Engine.create(engine_config);
         defer engine.destroy();
@@ -167,10 +212,10 @@ pub const Track = struct {
             },
         });
         defer audio_buf.destroy();
-        
+
         const sound = try engine.createSoundFromDataSource(
             audio_buf.asDataSourceMut(),
-            .{.looping = true},
+            .{ .looping = true },
             null,
         );
         defer sound.destroy();
