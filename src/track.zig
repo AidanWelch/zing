@@ -125,14 +125,14 @@ pub const Track = struct {
                     (x * sample_interval) + (sample_interval / 2) + (current_chunk * self.sample_rate)
                 ] + 1;
 
-                //;
-
                 // since middle_sample is 0 to 2, cut in half to be 0 to 1 then
                 // bound to be 0 to show_rows-1
                 const y: usize = @intFromFloat(@round(middle_sample *
                     (show_y_size - 1) * 0.5));
 
-                out_grid[x][y] = true;
+                // Just invert so that because since its printed line by line
+                // out_grid[0][0] is the top left corner
+                out_grid[x][show_y_size - y] = true;
             }
 
             try stdOut.writeByte('\n');
