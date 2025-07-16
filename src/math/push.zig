@@ -5,7 +5,7 @@ const zing = @import("../root.zig");
 // to the end of the calling track.
 pub fn push(track: *zing.Track, consumable_track: zing.Track) !void {
     defer consumable_track.free();
-    var sample = try track.track_data_allocator.alloc(track.data.len + consumable_track.data.len);
+    var sample = try track.alloc(track.data.len + consumable_track.data.len);
     @memcpy(sample[0..track.data.len], track.data);
     @memcpy(sample[track.data.len..], consumable_track.data);
     track.free();

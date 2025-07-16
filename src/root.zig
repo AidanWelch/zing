@@ -3,7 +3,6 @@ const track = @import("./track.zig");
 
 pub const Track = track.Track;
 pub const TrackData = track.TrackData;
-pub const TrackDataAllocator = track.TrackDataAllocator;
 pub const TrackOptions = track.TrackOptions;
 pub const Rectification = @import("./math/rectify.zig").Rectification;
 
@@ -14,6 +13,7 @@ pub const offset = @import("./math/offset.zig").offset;
 pub const push = @import("./math/push.zig").push;
 pub const rectify = @import("./math/rectify.zig").rectify;
 pub const scale = @import("./math/scale.zig").scale;
+pub const stretch = @import("./math/stretch.zig").stretch;
 
 pub const silence = @import("./sounds/silence.zig").silence;
 pub const sin = @import("./sounds/sin.zig").sin;

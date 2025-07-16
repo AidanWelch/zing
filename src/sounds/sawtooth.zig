@@ -8,7 +8,7 @@ pub fn sawtooth(opts: zing.TrackOptions, frequency: f32, seconds: f64) !zing.Tra
 
     const period = frequency / @as(f32, @floatFromInt(track.sample_rate));
 
-    var sample = try track.track_data_allocator.alloc(length);
+    var sample = try track.alloc(length);
 
     for (0..length) |i| {
         sample[i] = 2 * ((i / period) -

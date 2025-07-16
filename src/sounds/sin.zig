@@ -8,7 +8,7 @@ pub fn sin(opts: zing.TrackOptions, frequency: f32, seconds: f64) !zing.Track {
 
     const shift = 2 * std.math.pi * frequency / @as(f32, @floatFromInt(track.sample_rate));
 
-    var sample = try track.track_data_allocator.alloc(length);
+    var sample = try track.alloc(length);
 
     for (0..length) |i| {
         sample[i] = std.math.sin(@as(f32, @floatFromInt(i)) * shift);

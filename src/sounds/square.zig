@@ -8,7 +8,7 @@ pub fn square(opts: zing.TrackOptions, frequency: f32, seconds: f64) !zing.Track
 
     const shift = frequency / @as(f32, @floatFromInt(track.sample_rate));
 
-    var sample = try track.track_data_allocator.alloc(length);
+    var sample = try track.alloc(length);
 
     for (0..length) |i| {
         const fi = @as(f32, @floatFromInt(i));

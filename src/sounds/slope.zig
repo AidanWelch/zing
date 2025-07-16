@@ -5,7 +5,7 @@ const zing = @import("../root.zig");
 pub fn slope(opts: zing.TrackOptions, step: f32, length: usize) !zing.Track {
     var track = try zing.Track.init(opts);
 
-    var sample = try track.track_data_allocator.alloc(length);
+    var sample = try track.alloc(length);
     for (0..length) |i| {
         sample[i] = @as(f32, @floatFromInt(i)) * step;
     }
