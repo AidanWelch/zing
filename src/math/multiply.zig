@@ -16,5 +16,6 @@ pub fn multiply(track: *zing.Track, consumable_track: zing.Track) !void {
             sample[i] *= consumable_track.data[i];
         }
     }
+    track.free();
     track.data = sample;
 }
