@@ -120,6 +120,11 @@ pub const Track = struct {
             try stdOut.writeByte('\n');
             try stdOut.writeAll("_" ** show_columns);
             try stdOut.writeByte('\n');
+
+            // multiply by 3 for the braile char bytes, add an additional
+            // show_rows for the new lines
+            var out_buf: [(show_columns * show_rows * 3) + show_rows]u8 = undefined;
+            var cursor: usize = 0;
             for (0..show_rows) |row| {
                 for (0..show_columns) |col| {
                     const x = col * 2;
@@ -151,18 +156,19 @@ pub const Track = struct {
                         code_point |= 0b1000_0000;
                     }
 
-                    var out_char: [3]u8 = undefined;
                     const res = try std.unicode.utf8Encode(
                         code_point,
-                        &out_char,
+                        out_buf[cursor..],
                     );
                     if (res != 3) {
                         return error.GenericError;
                     }
-                    try stdOut.writeAll(&out_char);
+                    cursor += 3;
                 }
-                try stdOut.writeByte('\n');
+                out_buf[cursor] = '\n';
+                cursor += 1;
             }
+            try stdOut.writeAll(out_buf[0..cursor]);
             try stdOut.writeAll("‾" ** show_columns);
             try stdOut.writeByte('\n');
             current_chunk += 1;
