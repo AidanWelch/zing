@@ -11,8 +11,7 @@ pub fn main() !void {
     };
 
     var bass_beat = try zing.sin(opts, 2, 3);
-    zing.rectify(bass_beat, .POSITIVE_HALF);
-    try zing.stretch(&bass_beat, 0.7);
+    try zing.speed(&bass_beat, 2);
 
     //var t1 = try zing.square(opts, 3, 3);
     //zing.rectify(t1, .POSITIVE_HALF);

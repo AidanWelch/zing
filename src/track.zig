@@ -44,7 +44,7 @@ pub const Track = struct {
     }
 
     pub fn free(self: *Track) void {
-        self.free(self.data);
+        self.allocator.free(self.data);
     }
 
     /// Returns a new track that must also be freed
@@ -83,6 +83,7 @@ pub const Track = struct {
     // Each unicode braile has 4 rows
     const show_rows = 20;
     const show_y_size = show_rows * 4;
+    const show_y_max = show_y_size - 1;
 
     /// Renders the track to console
     pub fn show(self: *Track) !void {
@@ -108,12 +109,12 @@ pub const Track = struct {
 
                 // since middle_sample is 0 to 2, cut in half to be 0 to 1 then
                 // bound to be 0 to show_rows-1
-                const y: usize = @intFromFloat(@round(middle_sample *
-                    (show_y_size - 1) * 0.5));
+                const y: usize = @intFromFloat(middle_sample *
+                    show_y_max * 0.5);
 
                 // Just invert so that because since its printed line by line
                 // out_grid[0][0] is the top left corner
-                out_grid[x][show_y_size - y] = true;
+                out_grid[x][show_y_max - y] = true;
             }
 
             try stdOut.writeByte('\n');

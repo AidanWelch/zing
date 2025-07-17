@@ -13,7 +13,7 @@ pub const offset = @import("./math/offset.zig").offset;
 pub const push = @import("./math/push.zig").push;
 pub const rectify = @import("./math/rectify.zig").rectify;
 pub const scale = @import("./math/scale.zig").scale;
-pub const stretch = @import("./math/stretch.zig").stretch;
+pub const speed = @import("./math/speed.zig").speed;
 
 pub const silence = @import("./sounds/silence.zig").silence;
 pub const sin = @import("./sounds/sin.zig").sin;
